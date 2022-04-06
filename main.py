@@ -19,17 +19,12 @@ def start(message):
     username = message.from_user.username
     bot.reply_to(message, f"Hello, {username}")
 
-    cur.execute(f"SELECT telegram_id FROM telegram_user WHERE id = {id}")
+    cur.execute(f"SELECT telegram_id FROM telegram_user WHERE telegram_id = {id}")
     result = cur.fetchone()
 
     if not result:
         cur.execute("INSERT INTO telegram_user(telegram_id, username) VALUES (%s, %s)", (id, username))
         connection.commit()
-
-
-@bot.message_handler(func=lambda m: True)
-def echo_all(message):
-    bot.send_message(message, message.text)
 
 
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
