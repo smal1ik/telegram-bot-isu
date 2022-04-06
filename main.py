@@ -1,6 +1,7 @@
 import os
 import telebot
 import logging
+import psycopg2
 from config import *
 from flask import Flask, request
 
@@ -9,16 +10,26 @@ server = Flask(__name__)
 logger = telebot.logger
 logger.setLevel(logging.DEBUG)
 
+connection = psycopg2.connect(DB_URI, sslmode="require")
+cur = connection.cursor()
 
 @bot.message_handler(commands=["start"])
 def start(message):
+    id = message.from_user.id
     username = message.from_user.username
     bot.reply_to(message, f"Hello, {username}")
+
+    cur.execute(f"SELECT telegram_id FROM telegram_user WHERE id = {id}")
+    result = cur.fetchone()
+
+    if not result:
+        cur.execute("INSERT INTO telegram_user(telegram_id, username) VALUES (%s, %s)", (id, username))
+        connection.commit()
 
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    bot.reply_to(message, message.text)
+    bot.send_message(message, message.text)
 
 
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
