@@ -16,7 +16,7 @@ cur = connection.cursor()
 @bot.message_handler(commands=["start"])
 def start(message):
     id = message.from_user.id
-    username = message.from_user.username
+    username = message.from_user.first_name
     bot.reply_to(message, f"Hello, {username}")
 
     cur.execute(f"SELECT telegram_id FROM telegram_user WHERE telegram_id = {id}")
