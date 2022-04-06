@@ -25,6 +25,7 @@ def start(message):
     if not result:
         cur.execute("INSERT INTO telegram_user(telegram_id, username) VALUES (%s, %s)", (id, username))
         connection.commit()
+        connection.close()
 
 
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
