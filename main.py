@@ -15,6 +15,12 @@ def start(message):
     username = message.from_user.username
     bot.reply_to(message, f"Hello, {username}")
 
+
+@bot.message_handler(func=lambda m: True)
+def echo_all(message):
+    bot.reply_to(message, message.text)
+
+
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
 def rederict_message():
     json_string = request.get_data().decode("utf-8")
