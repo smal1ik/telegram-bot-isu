@@ -23,7 +23,7 @@ def start(message):
     result = cur.fetchone()
 
     if not result:
-        cur.execute("INSERT INTO telegram_user(telegram_id, username) VALUES (%s, %s)", (id, username))
+        cur.execute("INSERT INTO telegram_user(telegram_id, name) VALUES (%s, %s)", (id, username))
         connection.commit()
         connection.close()
 
