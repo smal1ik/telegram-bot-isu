@@ -13,11 +13,19 @@ logger.setLevel(logging.DEBUG)
 connection = psycopg2.connect(DB_URI, sslmode="require")
 cur = connection.cursor()
 
+username = ""
+start_message = \
+    f"""
+        Привет, {username}, я телеграм бот с расписанием ИГУ./n
+        Для начала введи номер своей группы в формате 02321-ДБ./n
+        Я могу выдавать расписание на учебный цикл, неделю или день./n
+    """
+
 @bot.message_handler(commands=["start"])
 def start(message):
     id = message.from_user.id
     username = message.from_user.first_name
-    bot.reply_to(message, f"Hello, {username}")
+    bot.send_message(message.chat.id, start_message)
 
     cur.execute(f"SELECT telegram_id FROM telegram_user WHERE telegram_id = {id}")
     result = cur.fetchone()
@@ -34,6 +42,7 @@ def rederict_message():
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
     return "!", 200
+
 
 
 if __name__ == "__main__":
