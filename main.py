@@ -37,9 +37,10 @@ def start(message):
         connection.close()
 
 
-@bot.massage_handler()
+@bot.massage_handler(func=lambda m: True)
 def set_number_gruop(message):
     number_group = message.from_user.text
+    bot.send_message(message.chat.id, number_group)
     print(number_group)
 
 
