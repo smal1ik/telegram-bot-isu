@@ -39,9 +39,10 @@ def start(message):
 
 @bot.message_handler(func=lambda m: True)
 def set_number_gruop(message):
-    number_group = message.from_user.text
+    number_group = message.text
     bot.send_message(message.chat.id, number_group)
     print(number_group)
+    print(message.json())
 
 
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
