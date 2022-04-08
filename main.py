@@ -37,6 +37,12 @@ def start(message):
         connection.close()
 
 
+@bot.massage_handler()
+def set_number_gruop(message):
+    number_group = message.from_user.text
+    print(number_group)
+
+
 @server.route(f"/{BOT_TOKEN}", methods=["POST"])
 def rederict_message():
     json_string = request.get_data().decode("utf-8")
