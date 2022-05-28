@@ -1,7 +1,10 @@
+from datetime import datetime
 import os
 import telebot
 import logging
 import psycopg2
+
+import ImageSchedule
 from config import *
 import requestToBD
 import re
@@ -20,9 +23,9 @@ start_message = "Привет, я телеграм бот с расписани�
                 "Для начала введи номер своей группы в формате 02321-ДБ.\n" \
                 "Я могу выдавать расписание на учебный цикл, неделю или день.\n"
 
+
 pointer_group = {}
 inline_id = {}
-
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -40,15 +43,6 @@ def start(message):
         keyboard.add(telebot.types.InlineKeyboardButton(text=number[0], callback_data='group'+str(number)))
     keyboard.row(telebot.types.InlineKeyboardButton('👉', callback_data='right'))
     bot.send_message(id, text="Выберите группу:", reply_markup=keyboard)
-    # bot.register_next_step_handler_by_chat_id(id, set_number_gruop)
-
-    # cur.execute(f"SELECT telegram_id FROM telegram_user WHERE telegram_id = {id}")
-    # result = cur.fetchone()
-
-    # if not result:
-    #     cur.execute("INSERT INTO telegram_user(telegram_id, name) VALUES (%s, %s)", (id, username))
-    #     connection.commit()
-
 
 def inline_number_group(user_id, messageid):
     global pointer_group
@@ -106,17 +100,26 @@ def process_callback_button1(callback_query):
 
 
 def set_number_gruop(number_group, user_id):
-    print(number_group)
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = telebot.types.KeyboardButton("Расписание на сегодня")
+    btn2 = telebot.types.KeyboardButton("Расписание на неделю")
+    btn3 = telebot.types.KeyboardButton("Изменить группу")
+    markup.add(btn1, btn2, btn3)
     if requestToBD.insert_user(user_id, number_group):
-        bot.send_message(user_id, "Окей, я запомнил, твоя группа " + number_group + ".")
+        bot.send_message(user_id, "Окей, я запомнил, твоя группа " + number_group + ".", reply_markup=markup)
     else:
-        bot.send_message(user_id, "Ты уже есть в базе данных, но можешь изменить информацию о себе.")
-    # if requestToBD.check_group(number_group):
-    #     bot.send_message(message.from_user.id, "Окей, я запомнил, твоя группа " + number_group + ".")
-    # else:
-    #     bot.send_message(message.from_user.id, "Такой группы не существует. Попробуй снова.")
-    #     bot.register_next_step_handler_by_chat_id(message.chat.id, set_number_gruop)
+        bot.send_message(user_id, "Ты уже есть в базе данных, но можешь изменить информацию о себе.", reply_markup=markup)
 
+@bot.message_handler(content_types=['text'])
+def func(message):
+    if message.text == "Расписание на сегодня":
+        text = ""
+        ImageSchedule.scheduleImage(requestToBD.get_schedule_one_day(message.chat.id, datetime.now()), datetime.weekday(datetime.now()))
+        bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
+    if message.text == "Расписание на неделю":
+        text = "asd"
+        requestToBD.get_schedule_week(message.chat.id, datetime.now())
+        bot.send_message(message.chat.id, text=text)
 
 bot.infinity_polling()
 
