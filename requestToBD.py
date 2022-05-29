@@ -190,25 +190,38 @@ def get_schedule_one_day(user_id, date):
     schedule = []
 
     cursor.execute(f"SELECT number FROM group_number WHERE id = '{group_number_id}'")
-    print("Расписание для группы: " + cursor.fetchone()[0])
     #=============================================================================================
     #Расписание на 1 день
     for day in days:
         if day[1] == 0 or day[1] == get_parity(date):
-            cursor.execute(f"SELECT group_number_id, time_id, descipline_id FROM shedule WHERE group_number_id = '{group_number_id}' and week_id = '{day[0]}'")
+            cursor.execute(f"SELECT group_number_id, time_id, descipline_id, type_pair_id, audience_id, teacher_id "
+                           f"FROM shedule WHERE group_number_id = '{group_number_id}' and week_id = '{day[0]}'")
 
             for elem in cursor.fetchall():
                 cursor.execute(f"SELECT name FROM descipline WHERE id = '{elem[2]}'")
                 descipline = cursor.fetchone()[0]
                 cursor.execute(f"SELECT start_time, end_time FROM time WHERE id = '{elem[1]}'")
                 time = cursor.fetchone()
-                schedule.append([descipline, time[0], time[1]])
+                cursor.execute(f"SELECT name FROM type_pair WHERE id = '{elem[3]}'")
+                type_pair = cursor.fetchone()
+                cursor.execute(f"SELECT name FROM audience WHERE id = '{elem[4]}'")
+                audience = cursor.fetchone()
+                cursor.execute(f"SELECT fio FROM teacher WHERE id = '{elem[5]}'")
+                teacher = cursor.fetchone()
+                schedule.append([descipline, time[0], time[1], type_pair[0], teacher[0], audience[0]])
     #==============================================================================================
     schedule.sort(key=lambda x: x[2])
-    print(schedule)
     cursor.close()
+    print(schedule)
     return schedule
 
+def update_user(user_id, number_group):
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT id FROM group_number WHERE number = '{number_group}'")
+    number = cursor.fetchone()[0]
+    cursor.execute(f"UPDATE user_telegram SET group_number_id = '{number}' WHERE id = {user_id}")
+    connection.commit()
+    cursor.close()
 
 def get_schedule_week(user_id, date):
     cursor = connection.cursor()
@@ -218,7 +231,6 @@ def get_schedule_week(user_id, date):
     date -= timedelta(days = minus)
 
     cursor.execute(f"SELECT number FROM group_number WHERE id = '{group_number_id}'")
-    print("Расписание для группы: " + cursor.fetchone()[0])
     schedule_week = []
     for i in range(6):
         cursor.execute(f"SELECT id, parity FROM week WHERE dayweek = '{m_day[datetime.weekday(date)]}' ")
@@ -231,7 +243,8 @@ def get_schedule_week(user_id, date):
 
         for day in days:
             if day[1] == 0 or day[1] == get_parity(date):
-                cursor.execute(f"SELECT group_number_id, time_id, descipline_id FROM shedule WHERE group_number_id = '{group_number_id}' and week_id = '{day[0]}'")
+                cursor.execute(f"SELECT group_number_id, time_id, descipline_id, type_pair_id, audience_id, teacher_id "
+                               f"FROM shedule WHERE group_number_id = '{group_number_id}' and week_id = '{day[0]}'")
                 #иф для препода и студента
 
                 for elem in cursor.fetchall():
@@ -239,11 +252,18 @@ def get_schedule_week(user_id, date):
                     descipline = cursor.fetchone()[0]
                     cursor.execute(f"SELECT start_time, end_time FROM time WHERE id = '{elem[1]}'")
                     time = cursor.fetchone()
-                    schedule.append([descipline, time[0], time[1]])
+                    cursor.execute(f"SELECT name FROM type_pair WHERE id = '{elem[3]}'")
+                    type_pair = cursor.fetchone()
+                    cursor.execute(f"SELECT name FROM audience WHERE id = '{elem[4]}'")
+                    audience = cursor.fetchone()
+                    cursor.execute(f"SELECT fio FROM teacher WHERE id = '{elem[5]}'")
+                    teacher = cursor.fetchone()
+                    schedule.append([descipline, time[0], time[1], type_pair[0], teacher[0], audience[0]])
         schedule.sort(key=lambda x: x[2])
         schedule_week.append(schedule)
         date += timedelta(days = 1)
     cursor.close()
+    print (schedule_week)
     return schedule_week
 
 def get_parity(date):

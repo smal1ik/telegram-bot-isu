@@ -1,5 +1,7 @@
 from datetime import datetime
 import os
+from time import sleep
+
 import telebot
 import logging
 import psycopg2
@@ -29,14 +31,14 @@ inline_id = {}
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    global pointer_group
-
-    id = message.from_user.id
-    username = message.from_user.first_name
-    pointer_group.update({id: 0})
-    print(pointer_group)
     bot.send_message(message.chat.id, start_message)
+    set_group(message)
 
+def set_group(message):
+    global pointer_group
+    id = message.from_user.id
+    pointer_group.update({id: 0})
+    id = message.from_user.id
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     groups = requestToBD.get_group()
     for number in groups[0:5]:
@@ -49,7 +51,6 @@ def inline_number_group(user_id, messageid):
     pointer = pointer_group[user_id]
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     groups = requestToBD.get_group()
-    print(pointer_group)
 
     if pointer <= 0:
         pointer_group.update({user_id: 0})
@@ -108,19 +109,22 @@ def set_number_gruop(number_group, user_id):
     if requestToBD.insert_user(user_id, number_group):
         bot.send_message(user_id, "Окей, я запомнил, твоя группа " + number_group + ".", reply_markup=markup)
     else:
-        bot.send_message(user_id, "Ты уже есть в базе данных, но можешь изменить информацию о себе.", reply_markup=markup)
+        requestToBD.update_user(user_id, number_group)
+        bot.send_message(user_id, "Окей, я изменил твою группу на " + number_group + ".", reply_markup=markup)
+
 
 @bot.message_handler(content_types=['text'])
 def func(message):
     if message.text == "Расписание на сегодня":
-        date = datetime.strptime("2022-05-29", "%Y-%m-%d")
+        date = datetime.strptime("2022-05-24", "%Y-%m-%d")
         ImageSchedule.scheduleImageday(requestToBD.get_schedule_one_day(message.chat.id, date), datetime.weekday(date))
         bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
     if message.text == "Расписание на неделю":
-        date = datetime.strptime("2022-05-29", "%Y-%m-%d")
-        print(requestToBD.get_schedule_week(message.chat.id, date))
-        # ImageSchedule.scheduleImageWeek(requestToBD.get_schedule_week(message.chat.id, date))
-        # bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
+        date = datetime.strptime("2022-05-24", "%Y-%m-%d")
+        ImageSchedule.scheduleImageWeek(requestToBD.get_schedule_week(message.chat.id, date))
+        bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
+    if message.text == "Изменить группу":
+        set_group(message)
 
 bot.infinity_polling()
 
