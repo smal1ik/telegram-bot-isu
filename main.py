@@ -113,13 +113,14 @@ def set_number_gruop(number_group, user_id):
 @bot.message_handler(content_types=['text'])
 def func(message):
     if message.text == "Расписание на сегодня":
-        text = ""
-        ImageSchedule.scheduleImage(requestToBD.get_schedule_one_day(message.chat.id, datetime.now()), datetime.weekday(datetime.now()))
+        date = datetime.strptime("2022-05-29", "%Y-%m-%d")
+        ImageSchedule.scheduleImageday(requestToBD.get_schedule_one_day(message.chat.id, date), datetime.weekday(date))
         bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
     if message.text == "Расписание на неделю":
-        text = "asd"
-        requestToBD.get_schedule_week(message.chat.id, datetime.now())
-        bot.send_message(message.chat.id, text=text)
+        date = datetime.strptime("2022-05-29", "%Y-%m-%d")
+        print(requestToBD.get_schedule_week(message.chat.id, date))
+        # ImageSchedule.scheduleImageWeek(requestToBD.get_schedule_week(message.chat.id, date))
+        # bot.send_photo(message.chat.id, open(r'red_page.png', 'rb'))
 
 bot.infinity_polling()
 

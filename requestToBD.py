@@ -219,6 +219,7 @@ def get_schedule_week(user_id, date):
 
     cursor.execute(f"SELECT number FROM group_number WHERE id = '{group_number_id}'")
     print("Расписание для группы: " + cursor.fetchone()[0])
+    schedule_week = []
     for i in range(6):
         cursor.execute(f"SELECT id, parity FROM week WHERE dayweek = '{m_day[datetime.weekday(date)]}' ")
         days = cursor.fetchall()
@@ -240,10 +241,10 @@ def get_schedule_week(user_id, date):
                     time = cursor.fetchone()
                     schedule.append([descipline, time[0], time[1]])
         schedule.sort(key=lambda x: x[2])
-        print(m_day[i], ":")
-        print(schedule)
+        schedule_week.append(schedule)
         date += timedelta(days = 1)
     cursor.close()
+    return schedule_week
 
 def get_parity(date):
     d1 = datetime.strptime(begin_date_pairs, "%Y-%m-%d")
