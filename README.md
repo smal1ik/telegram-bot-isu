@@ -8,6 +8,7 @@
 ![image](https://github.com/smal1ik/telegram-bot-isu/assets/95047014/0dbe1972-6632-4ed1-9757-b46b1cf62508)
 
 Выбор группы:
+
 ![image](https://github.com/smal1ik/telegram-bot-isu/assets/95047014/6bd95930-8332-4c5a-97e2-a4b10db50afc)
 
 
